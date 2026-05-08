@@ -25,18 +25,18 @@ const Books = sequelize.define("Books", {
     validate: {
       len: [3, 100],
     },
-    year: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    pages: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    isAvailable: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
+  },
+  year: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  pages: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  isAvailable: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
   },
 });
 

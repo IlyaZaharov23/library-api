@@ -34,7 +34,8 @@ const BookLoans = sequelize.define("BookLoans", {
   },
   returnedAt: {
     type: DataTypes.DATE,
-    allowNull: false,
+    allowNull: true,
+    defaultValue: null,
   },
   status: {
     type: DataTypes.ENUM("borrowed", "returned", "overdue"),
