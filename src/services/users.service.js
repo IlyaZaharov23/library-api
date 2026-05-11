@@ -8,7 +8,7 @@ class UsersService {
         offset: offset || 0,
         limit: limit || 10,
       });
-      return { count, users };
+      return { success: true, data: { count, users } };
     } catch (error) {
       throw error;
     }
@@ -16,32 +16,76 @@ class UsersService {
   async getUserByUuid(uuid) {
     try {
       const user = await Users.findOne({ where: { uuid } });
-      return user;
+      if (!user) {
+        return { success: false, reason: "User not found." };
+      }
+      return { success: true, data: user };
     } catch (error) {
       throw error;
     }
   }
   async createUser(user) {
     try {
+      const existingUser = await Users.findOne({
+        where: { email: user.email },
+        attributes: ["id"],
+      });
+      if (existingUser) {
+        return {
+          success: false,
+          reason: "User with this email already exists.",
+        };
+      }
+
       const newUser = { ...user, uuid: uuid() };
       const res = await Users.create(newUser);
-      return res;
+      return { success: true, data: res };
     } catch (error) {
       throw error;
     }
   }
   async updateUserByUuid(user, uuid) {
     try {
-      const updatedUser = await Users.update(user, { where: { uuid } });
-      return updatedUser;
+      const existingUser = await Users.findOne({
+        where: { uuid },
+        attributes: ["id", "email"],
+      });
+      if (!existingUser) {
+        return {
+          success: false,
+          reason: "User not found.",
+        };
+      }
+      if (user.email && user.email !== existingUser.email) {
+        const activeUser = await Users.findOne({
+          where: { email: user.email },
+          attributes: ["id"],
+        });
+        if (activeUser) {
+          return {
+            success: false,
+            reason: "User with this email already exists.",
+          };
+        }
+      }
+      await Users.update(user, { where: { uuid } });
+      const updatedUser = await Users.findOne({ where: { uuid } });
+      return { success: true, data: updatedUser };
     } catch (error) {
       throw error;
     }
   }
   async deleteUserByUuid(uuid) {
     try {
+      const existingUser = await Users.findOne({
+        where: { uuid },
+        attributes: ["id"],
+      });
+      if (!existingUser) {
+        return { success: false, reason: "User not found." };
+      }
       const res = await Users.destroy({ where: { uuid } });
-      return res;
+      return { success: true, data: res };
     } catch (error) {
       throw error;
     }

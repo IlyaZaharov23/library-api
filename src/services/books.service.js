@@ -1,5 +1,6 @@
 const Books = require("../models");
 const { v4: uuid } = require("uuid");
+const { Op } = require("sequelize");
 
 class BooksService {
   async getBooks(authorName, offset, limit) {
@@ -13,7 +14,7 @@ class BooksService {
         offset: offset || 0,
         limit: limit || 10,
       });
-      return { books, count };
+      return { success: true, data: { books, count } };
     } catch (error) {
       throw error;
     }
@@ -21,19 +22,22 @@ class BooksService {
   async getBookByUuid(uuid) {
     try {
       const book = await Books.findOne({ where: { uuid } });
-      return book;
+      if (!book) {
+        return { success: false, reason: "Book not found." };
+      }
+      return { success: true, book };
     } catch (error) {
       throw error;
     }
   }
-  async getBookByTitle(bookTitle) {
+  async getBooksByTitle(bookTitle) {
     try {
       const whereClause = {};
       if (bookTitle) {
-        whereClause.title = bookTitle;
+        whereClause.title = { [Op.like]: `%${bookTitle}%` };
       }
       const books = await Books.findAll({ where: whereClause });
-      return books;
+      return { success: true, books };
     } catch (error) {
       throw error;
     }
@@ -42,23 +46,30 @@ class BooksService {
     try {
       const newBook = { ...book, uuid: uuid() };
       const res = await Books.create(newBook);
-      return res;
+      return { success: true, data: res };
     } catch (error) {
       throw error;
     }
   }
   async updateBookByUuid(uuid, book) {
     try {
-      const updatedBook = await Books.update(book, { where: { uuid } });
-      return updatedBook;
+      const [affectedCount] = await Books.update(book, { where: { uuid } });
+      if (!affectedCount) {
+        return { success: false, reason: "Book not found." };
+      }
+      const updatedBook = await Books.findOne({ where: { uuid } });
+      return { success: true, updatedBook };
     } catch (error) {
       throw error;
     }
   }
   async deleteBookByUuid(uuid) {
     try {
-      const res = await Books.destroy({ where: { uuid } });
-      return res;
+      const deletedCount = await Books.destroy({ where: { uuid } });
+      if (!deletedCount) {
+        return { success: false, reason: "Book not found." };
+      }
+      return { success: true, uuid };
     } catch (error) {
       throw error;
     }

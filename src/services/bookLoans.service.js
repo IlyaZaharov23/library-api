@@ -1,14 +1,21 @@
-const BookLoans = require("../models");
-
+const { BookLoans, Books, Users } = require("../models");
 class BookLoansService {
   async borrowBook(data) {
     try {
       const { userId, bookId, dueDate } = data;
+      const currentUser = await Users.findByPk(userId);
+      const currentBook = await Books.findByPk(bookId);
+      if (!currentUser || !currentBook) {
+        return { success: false, reason: "User or book not found." };
+      }
       const activeLoan = await BookLoans.findOne({
         where: { bookId, returnedAt: null },
       });
       if (activeLoan) {
-        return null;
+        return { success: false, reason: "Book already borrowed." };
+      }
+      if (new Date(dueDate) < new Date()) {
+        return { success: false, reason: "Due date must be in the future." };
       }
       const borrowData = {
         userId,
@@ -16,7 +23,7 @@ class BookLoansService {
         dueDate,
       };
       const res = await BookLoans.create(borrowData);
-      return res;
+      return { success: true, data: res };
     } catch (error) {
       throw error;
     }
@@ -27,7 +34,10 @@ class BookLoansService {
         where: { bookId, userId, returnedAt: null },
       });
       if (!currentLoan) {
-        return null;
+        return {
+          success: false,
+          reason: "No active loan found for this user and book.",
+        };
       }
       const returnedDate = new Date();
       const status =
@@ -35,15 +45,23 @@ class BookLoansService {
       currentLoan.status = status;
       currentLoan.returnedAt = returnedDate;
       await currentLoan.save();
-      return currentLoan;
+      return { success: true, data: currentLoan };
     } catch (error) {
       throw error;
     }
   }
   async getUserLoans(userId) {
     try {
-      const loans = await BookLoans.findAll({ where: { userId } });
-      return loans;
+      const loans = await BookLoans.findAll({
+        where: { userId },
+        include: [
+          {
+            model: Books,
+            attributes: ["title", "author", "uuid", "pages", "year"],
+          },
+        ],
+      });
+      return { success: true, loans };
     } catch (error) {
       throw error;
     }
