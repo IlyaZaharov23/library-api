@@ -1,4 +1,5 @@
 const { BookLoans, Books, Users } = require("../models");
+
 class BookLoansService {
   async borrowBook(data) {
     try {
@@ -57,7 +58,7 @@ class BookLoansService {
         include: [
           {
             model: Books,
-            attributes: ["title", "author", "uuid", "pages", "year"],
+            attributes: ["title", "author", "pages", "year"],
           },
         ],
       });
@@ -68,4 +69,4 @@ class BookLoansService {
   }
 }
 
-module.exports = BookLoansService;
+module.exports = new BookLoansService();

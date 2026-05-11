@@ -35,4 +35,4 @@ class BookLoansController {
   }
 }
 
-module.exports = BookLoansController;
+module.exports = new BookLoansController();

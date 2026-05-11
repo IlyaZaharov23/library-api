@@ -1,27 +1,26 @@
-const Books = require("../models");
-const { v4: uuid } = require("uuid");
+const { Books } = require("../models");
 const { Op } = require("sequelize");
 
 class BooksService {
   async getBooks(authorName, offset, limit) {
     try {
-      const whereClause = {};
+      const whereClause = {};      
       if (authorName) {
         whereClause.author = authorName;
-      }
+      }      
       const { count, rows: books } = await Books.findAndCountAll({
         where: whereClause,
         offset: offset || 0,
-        limit: limit || 10,
+        limit: limit || 100,
       });
       return { success: true, data: { books, count } };
     } catch (error) {
       throw error;
     }
   }
-  async getBookByUuid(uuid) {
+  async getBookById(id) {
     try {
-      const book = await Books.findOne({ where: { uuid } });
+      const book = await Books.findByPk(id);
       if (!book) {
         return { success: false, reason: "Book not found." };
       }
@@ -44,36 +43,35 @@ class BooksService {
   }
   async createBook(book) {
     try {
-      const newBook = { ...book, uuid: uuid() };
-      const res = await Books.create(newBook);
+      const res = await Books.create(book);
       return { success: true, data: res };
     } catch (error) {
       throw error;
     }
   }
-  async updateBookByUuid(uuid, book) {
+  async updateBookById(id, book) {
     try {
-      const [affectedCount] = await Books.update(book, { where: { uuid } });
+      const [affectedCount] = await Books.update(book, { where: { id } });
       if (!affectedCount) {
         return { success: false, reason: "Book not found." };
       }
-      const updatedBook = await Books.findOne({ where: { uuid } });
+      const updatedBook = await Books.findByPk(id);
       return { success: true, updatedBook };
     } catch (error) {
       throw error;
     }
   }
-  async deleteBookByUuid(uuid) {
+  async deleteBookById(id) {
     try {
-      const deletedCount = await Books.destroy({ where: { uuid } });
+      const deletedCount = await Books.destroy({ where: { id } });
       if (!deletedCount) {
         return { success: false, reason: "Book not found." };
       }
-      return { success: true, uuid };
+      return { success: true, id };
     } catch (error) {
       throw error;
     }
   }
 }
 
-module.exports = BooksService;
+module.exports = new BooksService();

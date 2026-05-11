@@ -10,10 +10,10 @@ class UsersController {
       res.status(500).send({ message: error.message });
     }
   }
-  async getUserByUuid(req, res) {
+  async getUserById(req, res) {
     try {
-      const uuid = req.params.id;
-      const result = await UsersService.getUserByUuid(uuid);
+      const id = req.params.id;
+      const result = await UsersService.getUserById(id);
       if (!result.success) {
         return res.status(404).send({ message: result.reason });
       }
@@ -24,6 +24,8 @@ class UsersController {
   }
   async createUser(req, res) {
     try {
+      console.log(req.body);
+      
       const result = await UsersService.createUser(req.body);
       if (!result.success) {
         return res.status(400).send({ message: result.reason });
@@ -33,12 +35,9 @@ class UsersController {
       res.status(500).send({ message: error.message });
     }
   }
-  async updateUserByUuid(req, res) {
+  async updateUserById(req, res) {
     try {
-      const result = await UsersService.updateUserByUuid(
-        req.body,
-        req.params.id
-      );
+      const result = await UsersService.updateUserById(req.body, req.params.id);
       if (!result.success) {
         return res
           .status(result.reason === "User not found." ? 404 : 400)
@@ -49,17 +48,17 @@ class UsersController {
       res.status(500).send({ message: error.message });
     }
   }
-  async deleteUserByUuid(req, res) {
+  async deleteUserById(req, res) {
     try {
-      const result = await UsersService.deleteUserByUuid(req.params.id);
+      const result = await UsersService.deleteUserById(req.params.id);
       if (!result.success) {
         return res.status(404).send({ message: result.reason });
       }
-      res.send(result.data);
+      res.send(result.id);
     } catch (error) {
       res.status(500).send({ message: error.message });
     }
   }
 }
 
-module.exports = UsersController;
+module.exports = new UsersController();
