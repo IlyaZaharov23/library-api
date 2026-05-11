@@ -23,9 +23,7 @@ class UsersController {
     }
   }
   async createUser(req, res) {
-    try {
-      console.log(req.body);
-      
+    try {      
       const result = await UsersService.createUser(req.body);
       if (!result.success) {
         return res.status(400).send({ message: result.reason });
