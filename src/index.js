@@ -7,11 +7,13 @@ const swaggerUi = require("swagger-ui-express");
 const path = require("path");
 const YAML = require("yamljs");
 const sequelize = require("./config/db");
+const appRouter = require("./routes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api", appRouter);
 
 Sentry.setupExpressErrorHandler(app);
 
