@@ -1,21 +1,20 @@
-const { v4: uuid } = require("uuid");
-const Users = require("../models");
+const { Users } = require("../models");
 
 class UsersService {
   async getUsers(offset, limit) {
     try {
       const { count, rows: users } = await Users.findAndCountAll({
         offset: offset || 0,
-        limit: limit || 10,
+        limit: limit || 100,
       });
       return { success: true, data: { count, users } };
     } catch (error) {
       throw error;
     }
   }
-  async getUserByUuid(uuid) {
+  async getUserById(id) {
     try {
-      const user = await Users.findOne({ where: { uuid } });
+      const user = await Users.findByPk(id);
       if (!user) {
         return { success: false, reason: "User not found." };
       }
@@ -36,20 +35,16 @@ class UsersService {
           reason: "User with this email already exists.",
         };
       }
-
-      const newUser = { ...user, uuid: uuid() };
-      const res = await Users.create(newUser);
+      
+      const res = await Users.create(user);
       return { success: true, data: res };
     } catch (error) {
       throw error;
     }
   }
-  async updateUserByUuid(user, uuid) {
+  async updateUserById(user, id) {
     try {
-      const existingUser = await Users.findOne({
-        where: { uuid },
-        attributes: ["id", "email"],
-      });
+      const existingUser = await Users.findByPk(id);
       if (!existingUser) {
         return {
           success: false,
@@ -68,28 +63,25 @@ class UsersService {
           };
         }
       }
-      await Users.update(user, { where: { uuid } });
-      const updatedUser = await Users.findOne({ where: { uuid } });
+      await Users.update(user, { where: { id } });
+      const updatedUser = await Users.findByPk(id);
       return { success: true, data: updatedUser };
     } catch (error) {
       throw error;
     }
   }
-  async deleteUserByUuid(uuid) {
+  async deleteUserById(id) {
     try {
-      const existingUser = await Users.findOne({
-        where: { uuid },
-        attributes: ["id"],
-      });
+      const existingUser = await Users.findByPk(id);
       if (!existingUser) {
         return { success: false, reason: "User not found." };
       }
-      const res = await Users.destroy({ where: { uuid } });
-      return { success: true, data: res };
+      await Users.destroy({ where: { id } });
+      return { success: true, id };
     } catch (error) {
       throw error;
     }
   }
 }
 
-module.exports = UsersService;
+module.exports = new UsersService();

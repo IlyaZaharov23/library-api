@@ -3,17 +3,17 @@ const BooksService = require("../services/books.service");
 class BooksController {
   async getBooks(req, res) {
     try {
-      const { offset, limit, authorName } = req.query;
+      const { offset, limit, authorName } = req.query;      
       const result = await BooksService.getBooks(authorName, offset, limit);
       res.send(result.data);
     } catch (error) {
       res.status(500).send({ message: error.message });
     }
   }
-  async getBookByUuid(req, res) {
+  async getBookById(req, res) {
     try {
-      const uuid = req.params.id;
-      const result = await BooksService.getBookByUuid(uuid);
+      const id = req.params.id;
+      const result = await BooksService.getBookById(id);
       if (!result.success) {
         return res.status(404).send({ message: result.reason });
       }
@@ -39,10 +39,10 @@ class BooksController {
       res.status(500).send({ message: error.message });
     }
   }
-  async updateBookByUuid(req, res) {
+  async updateBookById(req, res) {
     try {
-      const uuid = req.params.id;
-      const result = await BooksService.updateBookByUuid(uuid, req.body);
+      const id = req.params.id;
+      const result = await BooksService.updateBookById(id, req.body);
       if (!result.success) {
         return res.status(404).send({ message: result.reason });
       }
@@ -51,18 +51,18 @@ class BooksController {
       res.status(500).send({ message: error.message });
     }
   }
-  async deleteBookByUuid(req, res) {
+  async deleteBookById(req, res) {
     try {
-      const uuid = req.params.id;
-      const result = await BooksService.deleteBookByUuid(uuid);
+      const id = req.params.id;
+      const result = await BooksService.deleteBookById(id);
       if (!result.success) {
         return res.status(404).send({ message: result.reason });
       }
-      res.send(result.uuid);
+      res.send(result.id);
     } catch (error) {
       res.status(500).send({ message: error.message });
     }
   }
 }
 
-module.exports = BooksController;
+module.exports = new BooksController();

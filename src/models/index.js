@@ -3,19 +3,13 @@ const Books = require("./books.model");
 const Users = require("./users.model");
 const BookLoans = require("./bookLoans.model");
 
-Users.belongsToMany(Books, {
-  through: BookLoans,
-  foreignKey: "userId",
-  as: "borrowedBooks",
-});
+Users.hasMany(BookLoans, { foreignKey: "userId" });
+BookLoans.belongsTo(Users, { foreignKey: "userId" });
 
-Books.belongsToMany(Users, {
-  through: BookLoans,
-  foreignKey: "bookId",
-  as: "borrowers",
-});
+Books.hasMany(BookLoans, { foreignKey: "bookId" });
+BookLoans.belongsTo(Books, { foreignKey: "bookId" });
 
-async () => {
+(async () => {
   try {
     if (process.env.NODE_ENV === "DEVELOPMENT") {
       await sequelize.sync({ alter: true });
@@ -24,6 +18,6 @@ async () => {
   } catch (error) {
     console.log("Sync DB error: ", error);
   }
-};
+})();
 
 module.exports = { Users, BookLoans, Books };

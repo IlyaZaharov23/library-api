@@ -1,4 +1,4 @@
-const { Sequelize, DataTypes } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 
 const Books = sequelize.define("Books", {
@@ -7,16 +7,11 @@ const Books = sequelize.define("Books", {
     primaryKey: true,
     autoIncrement: true,
   },
-  uuid: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    unique: true,
-  },
   title: {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      len: [4, 200],
+      len: [3, 200],
     },
   },
   author: {

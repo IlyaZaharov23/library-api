@@ -1,4 +1,4 @@
-const { Sequelize, DataTypes } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 
 const Users = sequelize.define(
@@ -8,11 +8,6 @@ const Users = sequelize.define(
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
-    },
-    uuid: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      unique: true,
     },
     name: {
       type: DataTypes.STRING,
