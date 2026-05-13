@@ -1,18 +1,20 @@
 require("dotenv").config();
 require("./sentry.instruments");
+const path = require("path");
 const Sentry = require("@sentry/node");
 const express = require("express");
 const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
-const path = require("path");
 const YAML = require("yamljs");
 const sequelize = require("./config/db");
 const appRouter = require("./routes");
 
 const app = express();
+const swaggerSpec = YAML.load(path.join(__dirname, "swaggerDocs.yaml"));
 
 app.use(cors());
 app.use(express.json());
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api", appRouter);
 
 Sentry.setupExpressErrorHandler(app);

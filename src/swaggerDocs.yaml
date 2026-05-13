@@ -1,0 +1,775 @@
+openapi: 3.0.0
+info:
+  title: Library API
+  description: API for managing books library
+  version: 1.0.0
+tags:
+  - name: Users
+    description: User management
+  - name: Books
+    description: Book management
+  - name: Loans
+    description: Book loans management
+components:
+  schemas:
+    ErrorResponse:
+      type: array
+      items:
+        type: string
+      example: ["Field name is required.", "Field email must be valid."]
+
+    InvalidIdErrorResponse:
+      type: array
+      items:
+        type: string
+      example: ["Invalid id."]
+
+    UserNotFoundErrorResponse:
+      type: array
+      items:
+        type: string
+      example: ["This user not found."]
+
+    BookNotFoundErrorResponse:
+      type: array
+      items:
+        type: string
+      example: ["This book not found."]
+
+    InternalServerErrorResponse:
+      type: array
+      items:
+        type: string
+      example: ["Internal server error"]
+
+    ValidationErrorResponse:
+      type: array
+      items:
+        type: string
+      example:
+        [
+          "Field title is required.",
+          "Field title must be between 3 and 200 symbols.",
+        ]
+
+    TitleValidationErrorResponse:
+      type: array
+      items:
+        type: string
+      example: ["Field title must be between 4 and 200 symbols."]
+
+    LoanValidationErrorResponse:
+      type: array
+      items:
+        type: string
+      example: ["Field userId is required.", "Field bookId is required."]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        registeredAt:
+          type: string
+          format: date-time
+          example: "2026-05-13T10:30:00.000Z"
+      required:
+        - id
+        - name
+        - email
+        - registeredAt
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: "John Smith"
+        email:
+          type: string
+          format: email
+          example: "john.smith@example.com"
+    UsersListResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 25
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+    Book:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          minLength: 3
+          maxLength: 200
+          example: "War and Peace"
+        author:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: "Leo Tolstoy"
+        year:
+          type: integer
+          example: 1869
+        pages:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 1225
+        isAvailable:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-05-13T10:30:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2026-05-13T10:30:00.000Z"
+      required:
+        - id
+        - title
+        - author
+        - year
+        - pages
+        - isAvailable
+    CreateBookRequest:
+      type: object
+      required:
+        - title
+        - author
+        - year
+        - pages
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 200
+          example: "Crime and Punishment"
+        author:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: "Fyodor Dostoevsky"
+        year:
+          type: integer
+          maximum: 2026
+          example: 1866
+        pages:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 672
+    UpdateBookRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 200
+          example: "The Idiot"
+        author:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: "Fyodor Dostoevsky"
+        year:
+          type: integer
+          maximum: 2026
+          example: 1869
+        pages:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          example: 656
+    BooksListResponse:
+      type: object
+      properties:
+        books:
+          type: array
+          items:
+            $ref: "#/components/schemas/Book"
+        count:
+          type: integer
+          example: 50
+    BookLoan:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 1
+        bookId:
+          type: integer
+          example: 1
+        borrowedAt:
+          type: string
+          format: date-time
+          example: "2026-05-13T10:30:00.000Z"
+        dueDate:
+          type: string
+          format: date
+          example: "2026-06-13"
+        returnedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        status:
+          type: string
+          enum: [borrowed, returned, overdue]
+          example: "borrowed"
+        Book:
+          $ref: "#/components/schemas/Book"
+    BorrowBookRequest:
+      type: object
+      required:
+        - userId
+        - bookId
+        - dueDate
+      properties:
+        userId:
+          type: integer
+          minimum: 1
+          example: 1
+        bookId:
+          type: integer
+          minimum: 1
+          example: 1
+        dueDate:
+          type: string
+          format: date
+          description: "Must be in the future (YYYY-MM-DD)"
+          example: "2026-07-15"
+    ReturnBookRequest:
+      type: object
+      required:
+        - userId
+        - bookId
+      properties:
+        userId:
+          type: integer
+          minimum: 1
+          example: 1
+        bookId:
+          type: integer
+          minimum: 1
+          example: 1
+  parameters:
+    OffsetParam:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: Number of records to skip
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+      description: Maximum number of records to return
+    AuthorNameParam:
+      name: authorName
+      in: query
+      schema:
+        type: string
+      description: Filter books by author name
+    TitleQueryParam:
+      name: title
+      in: query
+      schema:
+        type: string
+        minLength: 4
+        maxLength: 200
+      description: Search books by title (partial match)
+    BookIdPathParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      description: Book ID
+    UserIdPathParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      description: User ID
+paths:
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Get all users
+      description: Returns paginated list of all users
+      parameters:
+        - $ref: "#/components/parameters/OffsetParam"
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersListResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+    post:
+      tags:
+        - Users
+      summary: Create a new user
+      description: Creates a new user with name and email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Validation error or user already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      parameters:
+        - $ref: "#/components/parameters/UserIdPathParam"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvalidIdErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserNotFoundErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+    put:
+      tags:
+        - Users
+      summary: Update user by ID
+      description: Partially updates a user (at least one field required)
+      parameters:
+        - $ref: "#/components/parameters/UserIdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Validation error or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserNotFoundErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+    delete:
+      tags:
+        - Users
+      summary: Delete user by ID
+      parameters:
+        - $ref: "#/components/parameters/UserIdPathParam"
+      responses:
+        "200":
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+        "400":
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvalidIdErrorResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserNotFoundErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+  /books:
+    get:
+      tags:
+        - Books
+      summary: Get all books
+      description: Returns paginated list of books, optionally filtered by author
+      parameters:
+        - $ref: "#/components/parameters/OffsetParam"
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/AuthorNameParam"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BooksListResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+    post:
+      tags:
+        - Books
+      summary: Create a new book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookRequest"
+      responses:
+        "201":
+          description: Book created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "400":
+          description: Validation error (title, author, year, pages validation)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+  /books/search:
+    get:
+      tags:
+        - Books
+      summary: Search books by title
+      description: Returns books where title contains the search string (partial match)
+      parameters:
+        - $ref: "#/components/parameters/TitleQueryParam"
+      responses:
+        "200":
+          description: Success (returns empty array if no results)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Book"
+        "400":
+          description: Invalid title format (title must be between 4 and 200 symbols)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TitleValidationErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+  /books/{id}:
+    get:
+      tags:
+        - Books
+      summary: Get book by ID
+      parameters:
+        - $ref: "#/components/parameters/BookIdPathParam"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "400":
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvalidIdErrorResponse"
+        "404":
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookNotFoundErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+    put:
+      tags:
+        - Books
+      summary: Update book by ID
+      description: Partially updates a book (at least one field required)
+      parameters:
+        - $ref: "#/components/parameters/BookIdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBookRequest"
+      responses:
+        "200":
+          description: Book updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "400":
+          description: Validation error (at least one field required or invalid field value)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "404":
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookNotFoundErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+    delete:
+      tags:
+        - Books
+      summary: Delete book by ID
+      parameters:
+        - $ref: "#/components/parameters/BookIdPathParam"
+      responses:
+        "200":
+          description: Book deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+        "400":
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvalidIdErrorResponse"
+        "404":
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookNotFoundErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+  /loans:
+    post:
+      tags:
+        - Loans
+      summary: Borrow a book
+      description: Creates a new book loan record if the book is available
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BorrowBookRequest"
+      responses:
+        "200":
+          description: Book borrowed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookLoan"
+        "400":
+          description: Validation error (userId required, bookId required, dueDate must be in future) or business rule violation (book already borrowed)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanValidationErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+    put:
+      tags:
+        - Loans
+      summary: Return a book
+      description: Marks a book as returned and calculates if it was overdue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReturnBookRequest"
+      responses:
+        "200":
+          description: Book returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookLoan"
+        "400":
+          description: Validation error (userId required, bookId required) or no active loan found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanValidationErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
+  /loans/{id}:
+    get:
+      tags:
+        - Loans
+      summary: Get user's loan history
+      description: Returns all loans (active and history) for a specific user with book details
+      parameters:
+        - $ref: "#/components/parameters/UserIdPathParam"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookLoan"
+        "400":
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvalidIdErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerErrorResponse"
