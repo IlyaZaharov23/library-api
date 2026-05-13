@@ -24,6 +24,7 @@ class BookLoansService {
         dueDate,
       };
       const res = await BookLoans.create(borrowData);
+      await Books.update({ isAvailable: false }, { where: { id: bookId } });
       return { success: true, data: res };
     } catch (error) {
       throw error;
@@ -46,6 +47,7 @@ class BookLoansService {
       currentLoan.status = status;
       currentLoan.returnedAt = returnedDate;
       await currentLoan.save();
+      await Books.update({ isAvailable: true }, { where: { id: bookId } });
       return { success: true, data: currentLoan };
     } catch (error) {
       throw error;

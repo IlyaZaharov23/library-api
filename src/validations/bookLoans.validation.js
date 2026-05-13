@@ -1,26 +1,31 @@
 const { body, param, checkExact } = require("express-validator");
+const REQUEST_FIELD = require("../constants/requestField.constants");
+const ERROR_MESSAGES = require("../constants/errorMessages.constants");
 
 const bookLoansRequirements = {
   paramUserId: () =>
-    param("id").isInt({ min: 1 }).withMessage("Invalid id param.").toInt(),
-  bodyUserId: () =>
-    body("userId")
-      .notEmpty()
-      .withMessage("UserId is required.")
+    param(REQUEST_FIELD.ID)
       .isInt({ min: 1 })
-      .withMessage("Invalid userId.")
+      .withMessage(ERROR_MESSAGES.INVALID_FORMAT(REQUEST_FIELD.ID))
+      .toInt(),
+  bodyUserId: () =>
+    body(REQUEST_FIELD.USER_ID)
+      .notEmpty()
+      .withMessage(ERROR_MESSAGES.FIELD_REQUIRED(REQUEST_FIELD.USER_ID))
+      .isInt({ min: 1 })
+      .withMessage(ERROR_MESSAGES.INVALID_FORMAT(REQUEST_FIELD.USER_ID))
       .toInt(),
   bookId: () =>
-    body("bookId")
+    body(REQUEST_FIELD.BOOK_ID)
       .notEmpty()
-      .withMessage("BookId is required.")
+      .withMessage(ERROR_MESSAGES.FIELD_REQUIRED(REQUEST_FIELD.BOOK_ID))
       .isInt({ min: 1 })
-      .withMessage("Invalid bookId.")
+      .withMessage(ERROR_MESSAGES.INVALID_FORMAT(REQUEST_FIELD.BOOK_ID))
       .toInt(),
   dueDate: () =>
-    body("dueDate")
+    body(REQUEST_FIELD.DUE_DATE)
       .notEmpty()
-      .withMessage("Due date is required.")
+      .withMessage(ERROR_MESSAGES.FIELD_REQUIRED(REQUEST_FIELD.DUE_DATE))
       .isISO8601()
       .withMessage("Due date must be a valid date (YYYY-MM-DD).")
       .custom((value) => {
@@ -42,7 +47,12 @@ module.exports = {
   returnBook: [
     bookLoansRequirements.bodyUserId(),
     bookLoansRequirements.bookId(),
-    checkExact([], { message: "Only bookId and userId are allowed." }),
+    checkExact([], {
+      message: ERROR_MESSAGES.ONLY_FIELDS_ALLOWED([
+        REQUEST_FIELD.BOOK_ID,
+        REQUEST_FIELD.USER_ID,
+      ]),
+    }),
   ],
   getLoans: [bookLoansRequirements.paramUserId()],
 };

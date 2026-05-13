@@ -1,13 +1,15 @@
 const { Books } = require("../models");
 const { Op } = require("sequelize");
+const ENTITIES = require("../constants/entitie.constants");
+const ERROR_MESSAGES = require("../constants/errorMessages.constants");
 
 class BooksService {
   async getBooks(authorName, offset, limit) {
     try {
-      const whereClause = {};      
+      const whereClause = {};
       if (authorName) {
         whereClause.author = authorName;
-      }      
+      }
       const { count, rows: books } = await Books.findAndCountAll({
         where: whereClause,
         offset: offset || 0,
@@ -22,7 +24,10 @@ class BooksService {
     try {
       const book = await Books.findByPk(id);
       if (!book) {
-        return { success: false, reason: "Book not found." };
+        return {
+          success: false,
+          reason: ERROR_MESSAGES.NOT_FOUND(ENTITIES.BOOK),
+        };
       }
       return { success: true, book };
     } catch (error) {
@@ -53,7 +58,10 @@ class BooksService {
     try {
       const [affectedCount] = await Books.update(book, { where: { id } });
       if (!affectedCount) {
-        return { success: false, reason: "Book not found." };
+        return {
+          success: false,
+          reason: ERROR_MESSAGES.NOT_FOUND(ENTITIES.BOOK),
+        };
       }
       const updatedBook = await Books.findByPk(id);
       return { success: true, updatedBook };
@@ -65,7 +73,10 @@ class BooksService {
     try {
       const deletedCount = await Books.destroy({ where: { id } });
       if (!deletedCount) {
-        return { success: false, reason: "Book not found." };
+        return {
+          success: false,
+          reason: ERROR_MESSAGES.NOT_FOUND(ENTITIES.BOOK),
+        };
       }
       return { success: true, id };
     } catch (error) {

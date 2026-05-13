@@ -1,5 +1,6 @@
 const { Users } = require("../models");
-
+const ENTITIES = require("../constants/entitie.constants");
+const ERROR_MESSAGES = require("../constants/errorMessages.constants");
 class UsersService {
   async getUsers(offset, limit) {
     try {
@@ -16,7 +17,10 @@ class UsersService {
     try {
       const user = await Users.findByPk(id);
       if (!user) {
-        return { success: false, reason: "User not found." };
+        return {
+          success: false,
+          reason: ERROR_MESSAGES.NOT_FOUND(ENTITIES.USER),
+        };
       }
       return { success: true, data: user };
     } catch (error) {
@@ -32,10 +36,10 @@ class UsersService {
       if (existingUser) {
         return {
           success: false,
-          reason: "User with this email already exists.",
+          reason: ERROR_MESSAGES.EMAIL_EXISTS,
         };
       }
-      
+
       const res = await Users.create(user);
       return { success: true, data: res };
     } catch (error) {
@@ -48,7 +52,7 @@ class UsersService {
       if (!existingUser) {
         return {
           success: false,
-          reason: "User not found.",
+          reason: ERROR_MESSAGES.NOT_FOUND(ENTITIES.USER),
         };
       }
       if (user.email && user.email !== existingUser.email) {
@@ -59,7 +63,7 @@ class UsersService {
         if (activeUser) {
           return {
             success: false,
-            reason: "User with this email already exists.",
+            reason: ERROR_MESSAGES.EMAIL_EXISTS,
           };
         }
       }
@@ -74,7 +78,10 @@ class UsersService {
     try {
       const existingUser = await Users.findByPk(id);
       if (!existingUser) {
-        return { success: false, reason: "User not found." };
+        return {
+          success: false,
+          reason: ERROR_MESSAGES.NOT_FOUND(ENTITIES.USER),
+        };
       }
       await Users.destroy({ where: { id } });
       return { success: true, id };
