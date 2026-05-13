@@ -13,6 +13,8 @@ BookLoans.belongsTo(Books, { foreignKey: "bookId" });
   try {
     if (process.env.NODE_ENV === "DEVELOPMENT") {
       await sequelize.sync({ alter: true });
+    } else {
+      await sequelize.sync();
     }
     console.log("Tables synced successfully.");
   } catch (error) {
