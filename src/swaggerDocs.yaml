@@ -3,6 +3,9 @@ info:
   title: Library API
   description: API for managing books library
   version: 1.0.0
+servers:
+  - url: /api
+    description: API server
 tags:
   - name: Users
     description: User management
