@@ -53,7 +53,7 @@ class UsersController {
       if (!result.success) {
         return res.status(404).send(ErrorHelpers.customError(result.reason));
       }
-      res.send(result.id);
+      res.send({ id: result.id });
     } catch (error) {
       ErrorHelpers.catchError(res, error);
     }

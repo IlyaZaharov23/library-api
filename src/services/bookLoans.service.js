@@ -23,9 +23,15 @@ class BookLoansService {
         bookId,
         dueDate,
       };
-      const res = await BookLoans.create(borrowData);
+      await BookLoans.create(borrowData);
+
+      const createdLoan = await BookLoans.findOne({
+        where: { userId, bookId, returnedAt: null },
+        include: [{ model: Books }],
+      });
+
       await Books.update({ isAvailable: false }, { where: { id: bookId } });
-      return { success: true, data: res };
+      return { success: true, data: createdLoan };
     } catch (error) {
       throw error;
     }

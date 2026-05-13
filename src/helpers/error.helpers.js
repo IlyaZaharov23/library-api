@@ -8,7 +8,11 @@ class ErrorHelpers {
   }
   catchError(res, error) {
     Sentry.captureException(error);
-    res.status(500).send(this.customError(error.message));
+    const message =
+      process.env.NODE_ENV === "PRODUCTION"
+        ? "Internal server error."
+        : error.message;
+    res.status(500).send(this.customError(message));
   }
 }
 
