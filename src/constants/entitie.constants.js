@@ -1,6 +1,6 @@
 const ENTITIES = {
-  BOOK: "Book",
-  USER: "User",
+  BOOK: "book",
+  USER: "user",
 };
 
 module.exports = ENTITIES;
