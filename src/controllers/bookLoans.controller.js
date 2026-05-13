@@ -1,15 +1,16 @@
 const BookLoansService = require("../services/bookLoans.service");
+const ErrorHelpers = require("../helpers/error.helpers");
 
 class BookLoansController {
   async borrowBook(req, res) {
     try {
       const result = await BookLoansService.borrowBook(req.body);
       if (!result.success) {
-        return res.status(400).send({ message: result.reason });
+        return res.status(400).send(ErrorHelpers.customError(result.reason));
       }
       res.send(result.data);
     } catch (error) {
-      res.status(500).send({ message: error.message });
+      ErrorHelpers.catchError(res, error);
     }
   }
   async returnBook(req, res) {
@@ -17,11 +18,11 @@ class BookLoansController {
       const { userId, bookId } = req.body;
       const result = await BookLoansService.returnBook(userId, bookId);
       if (!result.success) {
-        return res.status(400).send({ message: result.reason });
+        return res.status(400).send(ErrorHelpers.customError(result.reason));
       }
       res.send(result.data);
     } catch (error) {
-      res.status(500).send({ message: error.message });
+      ErrorHelpers.catchError(res, error);
     }
   }
   async getUserLoans(req, res) {
@@ -30,7 +31,7 @@ class BookLoansController {
       const result = await BookLoansService.getUserLoans(userId);
       res.send(result.loans);
     } catch (error) {
-      res.status(500).send({ message: error.message });
+      ErrorHelpers.catchError(res, error);
     }
   }
 }

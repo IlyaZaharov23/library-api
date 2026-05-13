@@ -1,40 +1,45 @@
 const { body, checkExact, param, query } = require("express-validator");
+const REQUEST_FIELD = require("../constants/requestField.constants");
+const ERROR_MESSAGES = require("../constants/errorMessages.constants");
 
 const bookRequirements = {
   paramId: () =>
-    param("id").isInt({ min: 1 }).withMessage("Invalid id param.").toInt(),
+    param(REQUEST_FIELD.ID)
+      .isInt({ min: 1 })
+      .withMessage(ERROR_MESSAGES.INVALID_FORMAT(REQUEST_FIELD.ID))
+      .toInt(),
   queryTitle: () =>
-    query("title")
+    query(REQUEST_FIELD.TITLE)
       .isLength({ min: 4, max: 200 })
-      .withMessage("Title must be between 4 and 200 symbols."),
+      .withMessage(ERROR_MESSAGES.LENGTH_RANGE(REQUEST_FIELD.TITLE, 4, 200)),
   bodyTitle: () =>
-    body("title")
+    body(REQUEST_FIELD.TITLE)
       .trim()
       .notEmpty()
-      .withMessage("Title is required.")
+      .withMessage(ERROR_MESSAGES.FIELD_REQUIRED(REQUEST_FIELD.TITLE))
       .isLength({ min: 3, max: 200 })
-      .withMessage("Title must be between 4 and 200 symbols."),
+      .withMessage(ERROR_MESSAGES.LENGTH_RANGE(REQUEST_FIELD.TITLE, 4, 200)),
   author: () =>
-    body("author")
+    body(REQUEST_FIELD.AUTHOR)
       .trim()
       .notEmpty()
-      .withMessage("Author is required.")
+      .withMessage(ERROR_MESSAGES.FIELD_REQUIRED(REQUEST_FIELD.AUTHOR))
       .isLength({ min: 3, max: 100 })
-      .withMessage("Author must be between 3 and 100 symbols."),
+      .withMessage(ERROR_MESSAGES.LENGTH_RANGE(REQUEST_FIELD.AUTHOR, 3, 100)),
   year: () =>
-    body("year")
+    body(REQUEST_FIELD.YEAR)
       .notEmpty()
-      .withMessage("Year is required.")
+      .withMessage(ERROR_MESSAGES.FIELD_REQUIRED(REQUEST_FIELD.YEAR))
       .isInt({ max: new Date().getFullYear() })
       .withMessage(
         `Year must be a number and cannot be more than ${new Date().getFullYear()}.`
       ),
   pages: () =>
-    body("pages")
+    body(REQUEST_FIELD.PAGES)
       .notEmpty()
-      .withMessage("Pages is required.")
+      .withMessage(ERROR_MESSAGES.FIELD_REQUIRED(REQUEST_FIELD.PAGES))
       .isInt({ min: 1, max: 10000 })
-      .withMessage("Pages must be between 1 and 10000."),
+      .withMessage(ERROR_MESSAGES.LENGTH_RANGE(REQUEST_FIELD.PAGES, 1, 10000)),
 };
 
 module.exports = {
@@ -46,7 +51,12 @@ module.exports = {
     bookRequirements.year(),
     bookRequirements.pages(),
     checkExact([], {
-      message: "Only title, author, year and pages are allowed.",
+      message: ERROR_MESSAGES.ONLY_FIELDS_ALLOWED([
+        REQUEST_FIELD.TITLE,
+        REQUEST_FIELD.AUTHOR,
+        REQUEST_FIELD.YEAR,
+        REQUEST_FIELD.PAGES,
+      ]),
     }),
   ],
   updateBookById: [
@@ -57,12 +67,17 @@ module.exports = {
     bookRequirements.pages().optional(),
     body().custom((value) => {
       if (Object.keys(value).length === 0) {
-        throw new Error("At least one field must be provided.");
+        throw new Error(ERROR_MESSAGES.AT_LEAST_ONE);
       }
       return true;
     }),
     checkExact([], {
-      message: "Only title, author, year and pages are allowed.",
+      message: ERROR_MESSAGES.ONLY_FIELDS_ALLOWED([
+        REQUEST_FIELD.TITLE,
+        REQUEST_FIELD.AUTHOR,
+        REQUEST_FIELD.YEAR,
+        REQUEST_FIELD.PAGES,
+      ]),
     }),
   ],
   deleteBookById: [bookRequirements.paramId()],
